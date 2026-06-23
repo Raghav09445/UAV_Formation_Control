@@ -43,16 +43,7 @@ UAV formation/
 
 ---
 
-## 6-Phase Roadmap
 
-| Phase | Days | Title | Focus |
-|-------|------|-------|-------|
-| **1** | 1–3 | Prerequisites & Theory | Graph theory, LMI basics, control theory |
-| **2** | 4–6 | System Modelling | Build A, B, L matrices; formation reference |
-| **3** | 7–9 | Controller Design & LMI | Formulate and solve Theorem 1 (Eq. 22–23) |
-| **4** | 10–13 | Parameter Tuning | Validate stability, adjust σ(0) and ρ |
-| **5** | 14–15 | Stability Validation | Reproduce Table II & Fig. 2–5 from paper |
-| **6** | 16–20 | Simulation + Enhancements | Full-scale sim + 3 enhancements (saturation, delay, disturbance) |
 
 ---
 
@@ -61,7 +52,7 @@ UAV formation/
 ### 1. Set Up Python Environment
 
 ```powershell
-cd C:\Users\r3642\UAV formation
+cd C:\Users\Username\UAV formation
 python -m venv venv
 .\venv\Scripts\Activate.ps1
 pip install -r requirements.txt
@@ -92,7 +83,7 @@ Open `PHASE_1_TASKS.md` and work through the 5 theory tasks:
 4. Environment setup ✓ (already done)
 5. Event-triggered control theory
 
-**Estimated**: 3 days for Phase 1
+
 
 ---
 
@@ -103,7 +94,7 @@ Open `PHASE_1_TASKS.md` and work through the 5 theory tasks:
 
 ### Phase 2 (System Modelling)
 - `config/params.py` — System matrices, topology, formation reference
-- `PHASE_2_TASKS.md` (to be created)
+
 
 ### Phase 3 (Controller Design)
 - `lmi/lmi_solve.py` — Solve the LMI for K, Φ, Ω (Theorem 1)
@@ -113,18 +104,17 @@ Open `PHASE_1_TASKS.md` and work through the 5 theory tasks:
 - Jupyter notebook: tune σ(0), ρ, and other gains
 
 ### Phase 5 (Stability Validation)
-- Scripts to reproduce paper's Table II (trigger probabilities)
-- Figures 2–5 (trajectories, formation, bandwidth savings)
+- Figures-(trajectories, formation, bandwidth savings)
 
 ### Phase 6 (Full Simulation + Enhancements)
 - `sim/simulator.py` — 20-second closed-loop simulation
-- 3 enhancements: actuator saturation, comm delays, disturbance observer
+
 
 ---
 
-## LMI Formulation (Paper Theorem 1)
+## LMI Formulation 
 
-The core of the project is solving the block LMI in **Equations (22)–(23)**:
+The core of the project is solving the block LMI. 
 
 Find P̃, Q̃, R̃, Φ̃, Ω̃, S̃, K̃ such that:
 
@@ -147,7 +137,6 @@ Implementation: **`lmi/lmi_solve.py`** uses cvxpy to solve this feasibility prob
 
 ## Expected Results
 
-### From Paper (Table II, Fig. 2–5)
 - **5 UAVs** converge to rotating pentagon (radius 1 m, ω = 0.5 rad/s)
 - **Center tracks** reference trajectory at 0.3 m/s
 - **Trigger probabilities**: 38.5–62.5% (∼50% bandwidth savings)
@@ -163,24 +152,6 @@ Implementation: **`lmi/lmi_solve.py`** uses cvxpy to solve this feasibility prob
 
 ---
 
-## Enhancement Extensions
-
-After the core project, three enhancements deepen the work:
-
-1. **Actuator Saturation** (Days 14–15) — Easy
-   - Add ‖uᵢ‖ ≤ u_max constraint
-   - Anti-windup compensator
-   - Re-solve LMI with saturation bounds
-
-2. **Communication Delays** (Days 16–17) — Medium
-   - Replace state sharing with delayed data: xⱼ(t − τ)
-   - Re-derive LMI with delay-dependent stability (Jensen's inequality)
-   - Tune max delay τ_max
-
-3. **Disturbance Observer** (Days 18–20) — Medium
-   - Finite-time disturbance observer (FTDO)
-   - Estimate wind gusts and drag online
-   - Feedback compensation into control law
 
 ---
 
@@ -195,9 +166,7 @@ After the core project, three enhancements deepen the work:
 - Ge & Han (2017). "Distributed formation stabilization via event-triggered communication"  
 - Ren & Beard (2005). "Consensus seeking in multiagent systems..."
 
-### Mathematical Tools
-- Boyd et al. (1994). "Linear Matrix Inequalities in System and Control Theory"  
-- Khalil (2002). "Nonlinear Systems" (Lyapunov stability)
+
 
 ### Software
 - **cvxpy**: Python convex optimization package  
