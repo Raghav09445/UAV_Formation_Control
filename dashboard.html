@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UAV Formation Control - DECM Simulator</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background-color: #f5f5f5;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #282c34 0%, #1e2228 100%);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        header h1 {
+            font-size: 28px;
+            margin-bottom: 5px;
+        }
+        
+        header p {
+            font-size: 14px;
+            opacity: 0.8;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 20px auto;
+            padding: 0 20px;
+        }
+        
+        .controls {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        .controls h2 {
+            color: #282c34;
+            margin-bottom: 20px;
+            font-size: 18px;
+        }
+        
+        .control-group {
+            display: inline-block;
+            margin-right: 40px;
+            margin-bottom: 15px;
+        }
+        
+        .control-group label {
+            display: block;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+        
+        .control-group input {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            width: 150px;
+        }
+        
+        .control-group input:focus {
+            outline: none;
+            border-color: #0056b3;
+            box-shadow: 0 0 0 3px rgba(0,86,179,0.1);
+        }
+        
+        .help-text {
+            display: block;
+            font-size: 12px;
+            color: #666;
+            margin-top: 3px;
+        }
+        
+        .button-group {
+            margin-top: 20px;
+        }
+        
+        button {
+            padding: 12px 30px;
+            background-color: #0056b3;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover:not(:disabled) {
+            background-color: #003d82;
+        }
+        
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        
+        .system-info {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 20px;
+        }
+        
+        .system-info h3 {
+            color: #282c34;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+        
+        .system-info ul {
+            list-style: none;
+        }
+        
+        .system-info li {
+            font-size: 13px;
+            color: #555;
+            margin: 5px 0;
+        }
+        
+        .system-info li:before {
+            content: "• ";
+            color: #0056b3;
+            font-weight: bold;
+            margin-right: 5px;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        
+        .stat-card h3 {
+            color: #666;
+            font-size: 14px;
+            font-weight: normal;
+            margin-bottom: 10px;
+        }
+        
+        .stat-value {
+            font-size: 32px;
+            font-weight: bold;
+            color: #0056b3;
+        }
+        
+        .charts {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 20px;
+        }
+        
+        .chart-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            font-size: 18px;
+            color: #666;
+        }
+        
+        .error {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+            padding: 12px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .charts {
+                grid-template-columns: 1fr;
+            }
+            
+            .control-group {
+                display: block;
+                margin-right: 0;
+                margin-bottom: 20px;
+            }
+            
+            .control-group input {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>UAV Formation Control - DECM Simulator</h1>
+        <p>Dynamic Event-Triggered Communication Mechanism</p>
+    </header>
+    
+    <div class="container">
+        <div class="controls">
+            <h2>Simulation Parameters</h2>
+            <div>
+                <div class="control-group">
+                    <label for="T_sim">Simulation Time (s)</label>
+                    <input type="number" id="T_sim" value="50" step="10" min="10" max="200">
+                    <span class="help-text">Total simulation duration</span>
+                </div>
+                
+                <div class="control-group">
+                    <label for="SIGMA_INIT">Initial Threshold σ(0)</label>
+                    <input type="number" id="SIGMA_INIT" value="0.5" step="0.1" min="0.1" max="1.0">
+                    <span class="help-text">Initial dynamic threshold</span>
+                </div>
+                
+                <div class="control-group">
+                    <label for="RHO">Contraction Rate ρ</label>
+                    <input type="number" id="RHO" value="0.95" step="0.01" min="0.9" max="0.99">
+                    <span class="help-text">Threshold decay rate</span>
+                </div>
+            </div>
+            
+            <div class="button-group">
+                <button id="runBtn" onclick="runSimulation()">Run Simulation</button>
+            </div>
+            
+            <div class="system-info">
+                <h3>System Configuration</h3>
+                <ul>
+                    <li>UAVs: 5</li>
+                    <li>Formation Radius: 1.0 m</li>
+                    <li>Angular Velocity: 0.5 rad/s</li>
+                    <li>Center Velocity: 0.3 m/s</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div id="error" class="error" style="display:none;"></div>
+        <div id="loading" class="loading" style="display:none;">Running simulation...</div>
+        
+        <div id="results" style="display:none;">
+            <div class="stats" id="statsContainer"></div>
+            <div class="charts" id="chartsContainer"></div>
+        </div>
+    </div>
+    
+    <script>
+        async function runSimulation() {
+            const T_sim = parseFloat(document.getElementById('T_sim').value);
+            const SIGMA_INIT = parseFloat(document.getElementById('SIGMA_INIT').value);
+            const RHO = parseFloat(document.getElementById('RHO').value);
+            
+            const btn = document.getElementById('runBtn');
+            btn.disabled = true;
+            
+            document.getElementById('error').style.display = 'none';
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('results').style.display = 'none';
+            
+            try {
+                const response = await axios.post('http://localhost:5000/api/simulate', {
+                    T_sim, SIGMA_INIT, RHO
+                });
+                
+                const data = response.data.data;
+                displayResults(data);
+                
+            } catch (err) {
+                const errorDiv = document.getElementById('error');
+                errorDiv.textContent = 'Error: ' + (err.response?.data?.message || err.message);
+                errorDiv.style.display = 'block';
+            } finally {
+                document.getElementById('loading').style.display = 'none';
+                btn.disabled = false;
+            }
+        }
+        
+        function displayResults(data) {
+            // Stats
+            const statsHTML = `
+                <div class="stat-card">
+                    <h3>Bandwidth Reduction</h3>
+                    <div class="stat-value">${data.bandwidth_reduction.toFixed(1)}%</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Total Broadcasts</h3>
+                    <div class="stat-value">${data.total_broadcasts}</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Periodic Baseline</h3>
+                    <div class="stat-value">${data.periodic_broadcasts}</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Simulation Steps</h3>
+                    <div class="stat-value">${data.steps}</div>
+                </div>
+            `;
+            document.getElementById('statsContainer').innerHTML = statsHTML;
+            
+            // Charts
+            const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8'];
+            
+            // Trajectory
+            const traces = [];
+            for (let i = 0; i < data.n_uavs; i++) {
+                traces.push({
+                    x: data.positions.map(p => p[i][0]),
+                    y: data.positions.map(p => p[i][1]),
+                    mode: 'lines',
+                    name: `UAV ${i + 1}`,
+                    line: { color: colors[i] }
+                });
+            }
+            traces.push({
+                x: data.centers.map(c => c[0]),
+                y: data.centers.map(c => c[1]),
+                mode: 'lines',
+                name: 'Center',
+                line: { color: 'black', dash: 'dash', width: 2 }
+            });
+            
+            const trajectoryDiv = document.createElement('div');
+            trajectoryDiv.className = 'chart-container';
+            trajectoryDiv.innerHTML = '<h3>UAV Formation Trajectories</h3><div id="trajectory"></div>';
+            
+            // Broadcasts per UAV
+            const uavLabels = Array.from({length: data.n_uavs}, (_, i) => `UAV ${i+1}`);
+            const broadcastDiv = document.createElement('div');
+            broadcastDiv.className = 'chart-container';
+            broadcastDiv.innerHTML = '<h3>Broadcasts per UAV</h3><div id="broadcasts"></div>';
+            
+            // Bandwidth comparison
+            const bandwidthDiv = document.createElement('div');
+            bandwidthDiv.className = 'chart-container';
+            bandwidthDiv.innerHTML = '<h3>Bandwidth Comparison</h3><div id="bandwidth"></div>';
+            
+            document.getElementById('chartsContainer').innerHTML = '';
+            document.getElementById('chartsContainer').appendChild(trajectoryDiv);
+            document.getElementById('chartsContainer').appendChild(broadcastDiv);
+            document.getElementById('chartsContainer').appendChild(bandwidthDiv);
+            
+            Plotly.newPlot('trajectory', traces, { 
+                title: 'XY Position Trajectories',
+                xaxis: { title: 'X Position (m)' },
+                yaxis: { title: 'Y Position (m)' },
+                hovermode: 'closest'
+            });
+            
+            Plotly.newPlot('broadcasts', [{
+                x: uavLabels,
+                y: data.broadcast_counts,
+                type: 'bar',
+                marker: { color: '#0056b3' }
+            }], { 
+                title: 'Total Broadcast Count per UAV',
+                xaxis: { title: 'UAV' },
+                yaxis: { title: 'Broadcasts' }
+            });
+            
+            Plotly.newPlot('bandwidth', [{
+                x: ['Periodic', 'DECM'],
+                y: [data.periodic_broadcasts, data.total_broadcasts],
+                type: 'bar',
+                marker: { color: ['#cccccc', '#0056b3'] }
+            }], { 
+                title: `Bandwidth Reduction: ${data.bandwidth_reduction.toFixed(1)}%`,
+                yaxis: { title: 'Total Broadcasts' }
+            });
+            
+            document.getElementById('results').style.display = 'block';
+        }
+    </script>
+</body>
+</html>
