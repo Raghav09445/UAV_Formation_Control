@@ -1,12 +1,10 @@
 # UAV Formation Control — Dynamic Event-Triggered Communication
 
-A 20-day implementation roadmap for **Dynamic Event-Triggered Communication Mechanism (DECM) + Time-Varying Formation Tracking (TVFT)** for multi-agent UAV systems.
+Roadmap for **Dynamic Event-Triggered Communication Mechanism (DECM) + Time-Varying Formation Tracking (TVFT)** for multi-agent UAV systems.
 
 ## Project Overview
 
-This project implements the controller from:
-> **"Dynamic Event-Triggered Formation Control for UAVs with Time-Varying Reference"**  
-> *Xiang et al., IEEE IECON 2023*
+
 
 ### What This Does
 - **5 UAVs** maintain a rotating pentagon formation (radius 1 m)
@@ -208,14 +206,9 @@ After the core project, three enhancements deepen the work:
 
 ---
 
-## Contact & Notes
 
-- **Date Started**: June 15, 2026
-- **Estimated Duration**: 20 days
-- **Status**: Phase 1 (Theory Foundation)
 
 Each phase builds on the previous; skip no steps. Theory (Phase 1) foundations are critical for understanding the controller design (Phase 3) and debugging the simulation (Phase 6).
 
 ---
 
-**Next**: Open `PHASE_1_TASKS.md` and begin Task 1 (Graph Theory & Laplacian).
